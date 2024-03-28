@@ -10,7 +10,7 @@ from sklearn.metrics import classification_report
 # "Issue Codes" and original names. You'll need to pre-process the data, clean it, and possibly tokenize the text.
 
 # 1.1 - Load the data set
-data = pd.read_csv("agenda_data.csv")
+data = pd.read_csv(r"C:\Users\jhans\PycharmProjects\Agenda Mapping ML\Data\Historical_Agendas_Mapped_Mar27_5000_Clean.csv")
 
 # 1.2 - Explore the data set
 # Display the first few rows of the dataset
