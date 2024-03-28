@@ -3,6 +3,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import classification_report
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
 
 # 1. Load and preprocess the dataset
 # Data cleaning, tokenization, etc.
@@ -23,14 +27,6 @@ print(data.info())
 print(data.describe())
 # 1.3 - Data cleaning. Missing values, remove dupes, handle inconsistencies
 # 1.4 - Text preprocessing. Tokenization, removing stopwords (should I?), lowercasing, Lemmatization or stemming
-import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from nltk.stem import WordNetLemmatizer
-
-nltk.download('punkt')
-nltk.download('stopwords')
-nltk.download('wordnet')
 
 # Text preprocessing function
 def preprocess_text(text):
@@ -44,20 +40,41 @@ def preprocess_text(text):
     return ' '.join(tokens)
 
 # Apply preprocessing to the agenda item names
-data['cleaned_text'] = data['original_name'].apply(preprocess_text)
+data['cleaned_proposal_longtext'] = data['PROPOSAL_LONGTEXT'].apply(preprocess_text)
 
 # 1.5 - Final dataset
 # Final dataset after data preparation
 print(data.head())
 
-
 # 2. Feature Extraction
 # Feature Extraction: Convert the text data into numerical features that the machine learning model can understand.
 # You can use techniques like TF-IDF (Term Frequency-Inverse Document Frequency) or word embeddings such as Word2Vec
 # or GloVe for this purpose.
+
+# Initialize TfidfVectorizer with any custom parameters you may have used
 tfidf_vectorizer = TfidfVectorizer()
-X = tfidf_vectorizer.fit_transform(data['proposal_text'])
-y = data['issue_code']
+
+# Fit and transform the data
+X = tfidf_vectorizer.fit_transform(data['cleaned_proposal_longtext'])
+y = data['Research_Issue_Code']
+
+# Inspect Vocabulary
+print("Vocabulary:")
+print(tfidf_vectorizer.get_feature_names_out())
+
+# 2. Check Transformed Features
+# Convert the transformed features to an array for easier inspection
+X_array = X.toarray()
+
+# Print the shape of the transformed features matrix
+print("Shape of transformed features:", X_array.shape)
+
+# Print the first few rows of the transformed features matrix
+print("Transformed features (first few rows):")
+print(X_array[:5])  # Print only the first 5 rows for brevity
+
+#PICKUP HERE NEXT TIME - DON'T THINK VECTORIZING IS ACCURATE. Dictionary actually okay, but first few rows values seem
+#wrong
 
 # 3. Model Selection and Training
 # Model Selection and Training: Choose a suitable machine learning algorithm such as Multinomial Naive Bayes,
@@ -76,9 +93,11 @@ print(classification_report(y_test, y_pred))
 # 5. Prediction
 # Prediction and Deployment: Once satisfied with the model's performance, you can use it to predict the "Issue Codes"
 # and consistent naming conventions for new agenda items.
-new_proposals = ["New proposal 1", "New proposal 2", ...]
+new_proposals = ["Election of Director: Jon Hansen", "ADOPTION OF THE FINANCIAL STATEMENTS AND THE CONSOLIDATED FINANCIAL STATEMENTS"]
 X_new = tfidf_vectorizer.transform(new_proposals)
 predicted_issue_codes = model.predict(X_new)
+print(predicted_issue_codes)
+
 # Convert original names into consistent naming convention
 
 # Deployment: Save the model for future use
