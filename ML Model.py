@@ -7,6 +7,7 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
+import joblib
 
 # 1. Load and preprocess the dataset
 # Data cleaning, tokenization, etc.
@@ -93,10 +94,36 @@ print(classification_report(y_test, y_pred))
 # 5. Prediction
 # Prediction and Deployment: Once satisfied with the model's performance, you can use it to predict the "Issue Codes"
 # and consistent naming conventions for new agenda items.
-new_proposals = ["Election of Director: Jon Hansen", "ADOPTION OF THE FINANCIAL STATEMENTS AND THE CONSOLIDATED FINANCIAL STATEMENTS"]
-X_new = tfidf_vectorizer.transform(new_proposals)
-predicted_issue_codes = model.predict(X_new)
-print(predicted_issue_codes)
+
+# Load the Excel file with raw proposal text
+excel_file = r"C:\Users\jhans\PycharmProjects\Agenda Mapping ML\Data\Test_Proposal_Data_1.xlsx"  # Provide the path to your Excel file
+
+try:
+    new_proposals_df = pd.read_excel(excel_file)
+    # Loop through each row in the Excel file
+    for index, row in new_proposals_df.iterrows():
+        # Extract proposal text from the current row
+        proposal_text = row['proposal_text']
+
+        # Vectorize the proposal text using the same TfidfVectorizer used during training
+        X_new = tfidf_vectorizer.transform([proposal_text])
+
+        # Perform model prediction
+        predicted_issue_code = model.predict(X_new)[0]
+
+        # Update the "issue_codes" column with the predicted value
+        new_proposals_df.at[index, 'issue_code'] = predicted_issue_code
+
+    # Save the updated DataFrame back to the Excel file
+    new_proposals_df.to_excel("new_proposals_with_predictions.xlsx", index=False)
+except Exception as e:
+    print(f"Error reading Excel file at {proposal_text}", e)
+
+#Next steps
+#Provide more sample proposal names to test with through an excel file
+#Ideally have it write the issue code into that file for review
+#Train it with a larger data set
+#Figure out how to save the model for more efficient reuse
 
 # Convert original names into consistent naming convention
 
